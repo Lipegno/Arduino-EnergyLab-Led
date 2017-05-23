@@ -37,6 +37,8 @@ struct CONFIG_PARAMS {
   DELAY globalDelay;
 };
 
+unsigned int plugIsSelected = 0;
+
 int startUp;
 CONFIG_PARAMS start_values;
 RGB color;
@@ -129,6 +131,10 @@ void I2CValueRead(int howMany){
             start_values.globalDelay.bytes[i] = Wire.read();
          }
          break;
+   case (6):
+         plugIsSelected = Wire.read();
+         colorChanger(0);
+         break;
    default:
      ignoreSerie();
      break;
@@ -139,7 +145,10 @@ void I2CValueRead(int howMany){
 /*Changes the color of the leds.*/
 void colorChanger(int power){
   //Serial.println(power);
-  if(start_values.personNear == 1 && start_values.relayState == 0){
+  if(plugIsSelected == 1 && power == 0){
+    color = (RGB){128,128,128};
+  }
+  else  if(start_values.personNear == 1 && start_values.relayState == 0){
     color =(RGB) {102, 0 ,102};           
   }else  if(power < THRESHOLD_GREEN &&  start_values.personNear == 1){
     color = (RGB){0, 255, 0};
@@ -161,7 +170,7 @@ void LedMotionSide1(){
   bool firstPass = false;
   while(true){
     if(i == 0){
-      Serial.println("Pin On");
+      //Serial.println("Pin On");
       digitalWrite(HEART_BEAT_PIN, HIGH);
     }
     Serial.println(start_values.rotation);
@@ -206,8 +215,8 @@ void LedMotionSide1(){
       }
     strip.show();
      if(i == 1){
-      Serial.println("Pin Off");
-      digitalWrite(HEART_BEAT_PIN, HIGH);
+      //Serial.println("Pin Off");
+      digitalWrite(HEART_BEAT_PIN, LOW);
     }
   }
 }
@@ -217,6 +226,9 @@ void LedMotionSide2(){
   int i = start_values.offset;
   bool firstPass = false;
   while(true){
+     if(i == 0){
+      digitalWrite(HEART_BEAT_PIN, HIGH);
+    }
     Serial.println(start_values.rotation);
     if(start_values.rotation == 1){
       break;
@@ -258,7 +270,9 @@ void LedMotionSide2(){
     }
     strip.setPixelColor(i,0,0,0); 
     i = i - 1;
-    
+    if(i == 12){
+      digitalWrite(HEART_BEAT_PIN, LOW);
+    }
   }
 }
 

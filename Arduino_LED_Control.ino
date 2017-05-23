@@ -67,7 +67,7 @@ void loop() {
       else{
         LedMotionSide2();
       }
-  }
+    }
   delay(100); // DO NOT REMOVE THIS
 }
 
@@ -76,7 +76,7 @@ void loop() {
 void startUpPlug(){
   while (Wire.available()) { 
     start_values.rotation = Wire.read();
-    start_values.offset =Wire.read();
+    start_values.offset = Wire.read();
     start_values.relayState =Wire.read();
     start_values.personNear=Wire.read();
     for(int i = 0; i <= 3; i++){
@@ -133,8 +133,12 @@ void I2CValueRead(int howMany){
          break;
    case (6):
          plugIsSelected = Wire.read();
-         colorChanger(0);
+         color = (RGB){0,0,255};
          break;
+   case (7):
+         color = (RGB){0,0,0};
+         startUp = 1;
+         break;    
    default:
      ignoreSerie();
      break;
@@ -145,10 +149,7 @@ void I2CValueRead(int howMany){
 /*Changes the color of the leds.*/
 void colorChanger(int power){
   //Serial.println(power);
-  if(plugIsSelected == 1 && power == 0){
-    color = (RGB){128,128,128};
-  }
-  else  if(start_values.personNear == 1 && start_values.relayState == 0){
+  if(start_values.personNear == 1 && start_values.relayState == 0){
     color =(RGB) {102, 0 ,102};           
   }else  if(power < THRESHOLD_GREEN &&  start_values.personNear == 1){
     color = (RGB){0, 255, 0};
@@ -174,7 +175,8 @@ void LedMotionSide1(){
       digitalWrite(HEART_BEAT_PIN, HIGH);
     }
     Serial.println(start_values.rotation);
-    if(start_values.rotation == 2){
+    if(start_values.rotation == 2 || startUp == 1){
+      stripOff();
       break;
     }
     strip.setPixelColor(i,strip.Color(color.r,color.g,color.b)); 
@@ -230,7 +232,8 @@ void LedMotionSide2(){
       digitalWrite(HEART_BEAT_PIN, HIGH);
     }
     Serial.println(start_values.rotation);
-    if(start_values.rotation == 1){
+    if(start_values.rotation == 1 || startUp == 1){
+      stripOff();
       break;
     }
     strip.setPixelColor(i,strip.Color(color.r,color.g,color.b));

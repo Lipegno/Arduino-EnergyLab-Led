@@ -34,6 +34,7 @@ struct CONFIG_PARAMS {
   unsigned int offset;
   unsigned int relayState;
   unsigned int personNear;
+  unsigned int pattern_2;
   DELAY globalDelay;
 };
 
@@ -79,6 +80,7 @@ void startUpPlug(){
     start_values.offset = Wire.read();
     start_values.relayState =Wire.read();
     start_values.personNear=Wire.read();
+    start_values.pattern_2 = Wire.read();
     for(int i = 0; i <= 3; i++){
       start_values.globalDelay.bytes[i] = Wire.read();
     }
@@ -180,6 +182,7 @@ void LedMotionSide1(){
       break;
     }
     strip.setPixelColor(i,strip.Color(color.r,color.g,color.b)); 
+    strip.setPixelColor((i +  start_values.pattern_2 )% LED_NUM,strip.Color(color.r,color.g,color.b)); 
     if(i > 0){
       strip.setPixelColor(i - 1,strip.Color(color.r*BRIGTHNESS_MID ,color.g*BRIGTHNESS_MID ,color.b*BRIGTHNESS_MID));  
     }
@@ -189,6 +192,7 @@ void LedMotionSide1(){
     }
     strip.show();
     delay(start_values.globalDelay.value);
+    
     if(i < LED_NUM - 1){
       if(i > 0){
         strip.setPixelColor(i - 1,strip.Color(color.r*BRIGTHNESS_MID ,color.g*BRIGTHNESS_MID ,color.b*BRIGTHNESS_MID));  
@@ -199,11 +203,13 @@ void LedMotionSide1(){
       }
       strip.setPixelColor(i,strip.Color(color.r ,color.g ,color.b)); 
       strip.setPixelColor(i,0,0,0);  
+      strip.setPixelColor((i +  start_values.pattern_2 )% LED_NUM,strip.Color(0,0,0)); 
       i++;
     }else{
       if(firstPass  == false ){
         firstPass = true;         
       }
+      strip.setPixelColor((i +  start_values.pattern_2 )% LED_NUM,strip.Color(0,0,0)); 
       i = (i + 1)%LED_NUM;
     }
     if(firstPass == true && i == 0){
@@ -213,8 +219,8 @@ void LedMotionSide1(){
       strip.setPixelColor(LED_NUM - 2,0,0,0);  
     }
     if(firstPass == true && i == 2 ){
-            strip.setPixelColor(LED_NUM - 1,0,0,0);  
-      }
+      strip.setPixelColor(LED_NUM - 1,0,0,0);  
+    }
     strip.show();
      if(i == 1){
       //Serial.println("Pin Off");

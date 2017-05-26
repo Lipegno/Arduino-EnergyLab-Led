@@ -170,121 +170,60 @@ void colorChanger(int power){
 /* Starts the motion */
 void LedMotionSide1(){
   int i = start_values.offset;
-  bool firstPass = false;
   while(true){
-    if(i == 0){
-      //Serial.println("Pin On");
+    strip.setPixelColor((LED_NUM + i - 3)%LED_NUM,strip.Color(0,0,0)); 
+    strip.setPixelColor((LED_NUM + i - 2)%LED_NUM,strip.Color(color.r*BRIGTHNESS_LOW ,color.g*BRIGTHNESS_LOW ,color.b*BRIGTHNESS_LOW)); 
+    strip.setPixelColor((LED_NUM + i - 1)%LED_NUM,strip.Color(color.r*BRIGTHNESS_MID ,color.g*BRIGTHNESS_MID ,color.b*BRIGTHNESS_MID)); 
+    strip.setPixelColor((LED_NUM + i)%LED_NUM,strip.Color(color.r,color.g,color.b)); 
+    strip.setPixelColor((LED_NUM + i + start_values.pattern_2)%LED_NUM,strip.Color(color.r,color.g,color.b)); 
+    strip.show();
+    delay(start_values.globalDelay.value);
+    strip.setPixelColor((LED_NUM + i + start_values.pattern_2)%LED_NUM,strip.Color(0,0,0)); 
+    i++;
+    if(i > LED_NUM - 1){
+      i = 0;  
       digitalWrite(HEART_BEAT_PIN, HIGH);
+    }
+    if(i == 1){
+      digitalWrite(HEART_BEAT_PIN, LOW);
     }
     Serial.println(start_values.rotation);
     if(start_values.rotation == 2 || startUp == 1){
       stripOff();
       break;
     }
-    strip.setPixelColor(i,strip.Color(color.r,color.g,color.b)); 
-    strip.setPixelColor((i +  start_values.pattern_2 )% LED_NUM,strip.Color(color.r,color.g,color.b)); 
-    if(i > 0){
-      strip.setPixelColor(i - 1,strip.Color(color.r*BRIGTHNESS_MID ,color.g*BRIGTHNESS_MID ,color.b*BRIGTHNESS_MID));  
-    }
-    if(i > 1){
-      strip.setPixelColor(i - 1,strip.Color(color.r*BRIGTHNESS_MID ,color.g*BRIGTHNESS_MID ,color.b*BRIGTHNESS_MID));  
-      strip.setPixelColor(i - 2,strip.Color(color.r*BRIGTHNESS_LOW ,color.g*BRIGTHNESS_LOW ,color.b*BRIGTHNESS_LOW));  
-    }
-    strip.show();
-    delay(start_values.globalDelay.value);
-    
-    if(i < LED_NUM - 1){
-      if(i > 0){
-        strip.setPixelColor(i - 1,strip.Color(color.r*BRIGTHNESS_MID ,color.g*BRIGTHNESS_MID ,color.b*BRIGTHNESS_MID));  
-      }
-      if(i > 1){
-        strip.setPixelColor(i - 2,0,0,0);
-        strip.setPixelColor(i - 1,0,0,0);  
-      }
-      strip.setPixelColor(i,strip.Color(color.r ,color.g ,color.b)); 
-      strip.setPixelColor(i,0,0,0);  
-      strip.setPixelColor((i +  start_values.pattern_2 )% LED_NUM,strip.Color(0,0,0)); 
-      i++;
-    }else{
-      if(firstPass  == false ){
-        firstPass = true;         
-      }
-      strip.setPixelColor((i +  start_values.pattern_2 )% LED_NUM,strip.Color(0,0,0)); 
-      i = (i + 1)%LED_NUM;
-    }
-    if(firstPass == true && i == 0){
-      strip.setPixelColor(LED_NUM - 3,0,0,0);  
-    }
-    if(firstPass == true && i == 1){
-      strip.setPixelColor(LED_NUM - 2,0,0,0);  
-    }
-    if(firstPass == true && i == 2 ){
-      strip.setPixelColor(LED_NUM - 1,0,0,0);  
-    }
-    strip.show();
-     if(i == 1){
-      //Serial.println("Pin Off");
-      digitalWrite(HEART_BEAT_PIN, LOW);
-    }
   }
 }
+
 /* Starts the motion 
- */
-void LedMotionSide2(){
+ */void LedMotionSide2(){
   int i = start_values.offset;
-  bool firstPass = false;
   while(true){
-     if(i == 0){
+    if(i <= 0){
+      i = 12;  
       digitalWrite(HEART_BEAT_PIN, HIGH);
+    }
+    strip.setPixelColor((i + 3)%LED_NUM,strip.Color(0,0,0));
+    strip.setPixelColor((i + 2)%LED_NUM,strip.Color(color.r*BRIGTHNESS_LOW ,color.g*BRIGTHNESS_LOW ,color.b*BRIGTHNESS_LOW)); 
+    strip.setPixelColor((i + 1)%LED_NUM,strip.Color(color.r*BRIGTHNESS_MID ,color.g*BRIGTHNESS_MID ,color.b*BRIGTHNESS_MID)); 
+    strip.setPixelColor((i)%LED_NUM,strip.Color(color.r,color.g,color.b)); 
+    //Plus two comes from the tail.
+    strip.setPixelColor((i + 2 + start_values.pattern_2 )%LED_NUM,strip.Color(color.r,color.g,color.b)); 
+    strip.show();
+    delay(start_values.globalDelay.value);
+    //Plus two comes from the tail.
+    strip.setPixelColor((i + 2 + start_values.pattern_2)%LED_NUM,strip.Color(0,0,0)); 
+    i--;
+    if(i == 11){
+      digitalWrite(HEART_BEAT_PIN, LOW);    
     }
     Serial.println(start_values.rotation);
     if(start_values.rotation == 1 || startUp == 1){
       stripOff();
       break;
     }
-    strip.setPixelColor(i,strip.Color(color.r,color.g,color.b));
-    if(i == LED_NUM - 1 ){
-      strip.setPixelColor(i + 1,strip.Color(color.r*BRIGTHNESS_MID ,color.g*BRIGTHNESS_MID ,color.b*BRIGTHNESS_MID));      
-    } 
-    if(i <= LED_NUM - 2 ){
-      strip.setPixelColor(i + 1,strip.Color(color.r*BRIGTHNESS_MID ,color.g*BRIGTHNESS_MID ,color.b*BRIGTHNESS_MID));      
-      strip.setPixelColor(i + 2,strip.Color(color.r*BRIGTHNESS_LOW ,color.g*BRIGTHNESS_LOW ,color.b*BRIGTHNESS_LOW));      
-    } 
-    strip.show();
-    delay(start_values.globalDelay.value);
-    if(i > 0){
-      if(i == LED_NUM - 1 && firstPass == false){
-        strip.setPixelColor(i + 1,0,0,0);      
-      } 
-      if(i == LED_NUM - 1 && firstPass == true){
-        strip.setPixelColor(i + 1,0,0,0);      
-      } 
-      if(i <= LED_NUM - 2 ){
-        strip.setPixelColor(i + 1,0,0,0);      
-        strip.setPixelColor(i + 2,0,0,0);      
-      } 
-    }else{
-      firstPass = true;         
-      i = LED_NUM;
-    }
-    //LEDs position are hard coded but this will be the same for LED Strips.
-    if(i == LED_NUM && firstPass == true){
-      strip.setPixelColor(2,0,0,0);      
-    }
-    if(i == LED_NUM - 1 && firstPass == true){
-      strip.setPixelColor(1,0,0,0);      
-    }
-    if(i == LED_NUM - 2 && firstPass == true){
-      strip.setPixelColor(0,0,0,0);      
-    }
-    strip.setPixelColor(i,0,0,0); 
-    i = i - 1;
-    if(i == 12){
-      digitalWrite(HEART_BEAT_PIN, LOW);
-    }
   }
 }
-
 
 /*Clean the LED color*/
 void stripOff(){

@@ -19,14 +19,17 @@ void readDelay();
 
 void setup() {
   Serial.begin(9600);      // initialize serial communication
+  Serial.print("Setting Up Arduino");
   Wire.begin(8);                // join i2c bus with address #8
   Wire.onReceive(I2CValueRead); // register event
   strip.begin();
   stripOff();              //Ensures that the strip is off when the plug is turned on
   strip.setBrightness(30);
   blinkFourTime();
-  myStrip.canStartMovement = false;
+  myStrip.canStartMovement = 0;
   pinMode(HEART_BEAT_PIN, OUTPUT);
+  Serial.print("Arduino Ready");
+  Serial.print(" Waiting for configuration... ");
 }
 
 
@@ -40,25 +43,22 @@ void loop() {
 
 /* Sets start up variables.*/
 void startUpPlug() {
-    while (Wire.available()) {
-        myStrip.relayState = Wire.read();
-        myStrip.personNear = Wire.read();
-        myStrip.leds_on = Wire.read();
-        readDelay();
-        //This is only to startup the led array (instanciate it)
-        SINGLE_LED_PARAM ledsOnArray[myStrip.leds_on];
-        *ledPointer = ledsOnArray[0];
-        for(int i = 0; i < myStrip.leds_on; i++){
-            ledsOnArray[i].inital_position = Wire.read();
-            ledsOnArray[i].rotation = Wire.read();
-            ledsOnArray[i].myColor.r = Wire.read();
-            ledsOnArray[i].myColor.g = Wire.read();
-            ledsOnArray[i].myColor.b = Wire.read();
-            ledsOnArray[i].current_position = ledsOnArray[i].inital_position;
-            ledsOnArray[i].isSelected = false;
+    Serial.println("Setting up Initial Config");
+        while (Wire.available()) {
+            myStrip.relayState = Wire.read();
+            myStrip.personNear = Wire.read();
+
+            myStrip.leds_on = Wire.read();
+            Serial.print("Number of Leds: ");
+            Serial.print(myStrip.leds_on);
+            Serial.println("");
+            readDelay();
+            //This is only to startup the led array (instanciate it)
+            ledPointer= new SINGLE_LED_PARAM[myStrip.leds_on];
+            myStrip.ledsConfigured = 0;
         }
-        myStrip.canStartMovement = true;
-    }
+        digitalWrite(HEART_BEAT_PIN, LOW);
+    Serial.println("Initial Config ready");
 }
 
 
@@ -86,31 +86,57 @@ void I2CValueRead(int howMany){
        readDelay();
       break;
    case(4):
-       //Change the color of one of the leds when its selected.
-       pos = Wire.read();
-       (*(ledPointer + pos)).myColor = (RGB){0,0,255};
-       (*(ledPointer + pos)).isSelected = true;
-       break;
-   case(5):
-       //Change the Led color back to normal after it's been selected for a while.
-       pos = Wire.read();
-       (*(ledPointer + pos)).myColor = myStrip.generalColor;
-       (*(ledPointer + pos)).isSelected = true;
-       break;
-   case (6):
-       //When socket is disconnected
-         for(byte i = 0; i < myStrip.leds_on; i++){
-             (*(ledPointer + i)).myColor = (RGB){0,0,0};
-         }
-         break;
-   default:
-     ignoreSerie();
-     break;
- }
- return;
-}
+          if(myStrip.ledsConfigured <= myStrip.leds_on){
 
-/*Changes the color of the leds.*/
+             (*(ledPointer + myStrip.ledsConfigured)).inital_position = Wire.read();
+             (*(ledPointer + myStrip.ledsConfigured)).rotation = Wire.read();
+             (*(ledPointer + myStrip.ledsConfigured)).myColor.r = Wire.read();
+             (*(ledPointer + myStrip.ledsConfigured)).myColor.g = Wire.read();
+             (*(ledPointer + myStrip.ledsConfigured)).myColor.b = Wire.read();
+             (*(ledPointer + myStrip.ledsConfigured)).current_position = (*(ledPointer + myStrip.ledsConfigured)).inital_position;
+             (*(ledPointer + myStrip.ledsConfigured)).isSelected = 0;
+
+             //Serial.println((*(ledPointer + myStrip.ledsConfigured)).inital_position );
+             //Serial.println((*(ledPointer + myStrip.ledsConfigured)).rotation);
+             //Serial.println((*(ledPointer + myStrip.ledsConfigured)).myColor.r);
+             //Serial.println((*(ledPointer + myStrip.ledsConfigured)).myColor.g);
+
+              myStrip.ledsConfigured += 1;
+              if(myStrip.ledsConfigured >= myStrip.leds_on){
+                  myStrip.canStartMovement = 1;
+              }
+          }
+          break;
+    case(5):
+        myStrip.personNear = Wire.read();
+        break;
+    case(6):
+        //Change the color of one of the leds when its selected.
+        pos = Wire.read();
+        (*(ledPointer + pos)).myColor = (RGB){0,0,255};
+        (*(ledPointer + pos)).isSelected = 1;
+        break;
+    case(7):
+        //Change the Led color back to normal after it's been selected for a while.
+        pos = Wire.read();
+        (*(ledPointer + pos)).myColor = myStrip.generalColor;
+        (*(ledPointer + pos)).isSelected = 0;
+        break;
+    case (8):
+        //When socket is disconnected
+          stripOff();
+          for(byte i = 0; i < myStrip.leds_on; i++){
+              (*(ledPointer + i)).myColor = (RGB){0,0,0};
+          }
+          break;
+    default:
+      ignoreSerie();
+      break;
+  }
+  return;
+ }
+
+ /*Changes the color of the leds.*/
 void colorChanger(int power){
   if(myStrip.personNear == 1 && myStrip.relayState == 0){
     myStrip.generalColor = (RGB) {102, 0 ,102};
@@ -142,9 +168,9 @@ void ledMotion(){
               if((*(ledPointer + i)).current_position > LED_NUM - 1){
                   (*(ledPointer + i)).current_position = 0;
                   //HeartBeat - when first led passes in position 0
-                  if((*(ledPointer + 0)).current_position == 0 ){
-                      digitalWrite(HEART_BEAT_PIN, HIGH);
-                  }
+              }
+              if((*(ledPointer + 0)).current_position == 0 ){
+                  digitalWrite(HEART_BEAT_PIN, HIGH);
               }
               //Write The colors
               strip.setPixelColor((LED_NUM + (*(ledPointer + i)).current_position - 1)%LED_NUM,strip.Color(0,0,0));
@@ -155,9 +181,9 @@ void ledMotion(){
               if((*(ledPointer + i)).current_position <= 0){
                   (*(ledPointer + i)).current_position = 12;
                   //HeartBeat
-                  if((*(ledPointer + 0)).current_position == 0 ){
-                      digitalWrite(HEART_BEAT_PIN, HIGH);
-                  }
+              }
+              if((*(ledPointer + 0)).current_position == 0 ){
+                  digitalWrite(HEART_BEAT_PIN, HIGH);
               }
               //Write The colors
               strip.setPixelColor(((*(ledPointer + i)).current_position + 1)%LED_NUM,strip.Color(0,0,0));
@@ -169,6 +195,7 @@ void ledMotion(){
       }
       strip.show();
       delay(myStrip.delay.value);
+      digitalWrite(HEART_BEAT_PIN, LOW);
       //heartBeatSent = false;
 }
 

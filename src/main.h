@@ -5,7 +5,7 @@
 #ifndef ARDUINO_PLATFORMIO_MAIN_H
 #define ARDUINO_PLATFORMIO_MAIN_H
 
-#include "../lib/Adafruit_NeoPixel.h"
+#include <../lib/Adafruit_NeoPixel/Adafruit_NeoPixel.h>
 #include <Wire.h>
 
 const int LED_NUM = 12;
@@ -35,7 +35,8 @@ union POWER{
 struct STRIP_PARAM{
     int relayState;
     int personNear;
-    int leds_on;
+    int leds_on;        //max number of leds that can be configured
+    int ledsConfigured; //This will show how many leds have been configured this is needed because I2C buffer only allows you to send 32 bytes of data
     DELAY delay;
     boolean canStartMovement;
     RGB generalColor;

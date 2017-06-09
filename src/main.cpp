@@ -6,6 +6,7 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(LED_NUM , LED_PIN, NEO_GRB + NEO_KHZ
 
 struct STRIP_PARAM myStrip;
 struct SINGLE_LED_PARAM *ledPointer = nullptr;
+struct RGB *ledColorBackup = nullptr;
 
 void ignoreSerie();
 void startUpPlug();
@@ -86,8 +87,8 @@ void I2CValueRead(int howMany){
        readDelay();
       break;
    case(4):
+          //Configure each new led
           if(myStrip.ledsConfigured <= myStrip.leds_on){
-
              (*(ledPointer + myStrip.ledsConfigured)).inital_position = Wire.read();
              (*(ledPointer + myStrip.ledsConfigured)).rotation = Wire.read();
              (*(ledPointer + myStrip.ledsConfigured)).myColor.r = Wire.read();
@@ -95,11 +96,6 @@ void I2CValueRead(int howMany){
              (*(ledPointer + myStrip.ledsConfigured)).myColor.b = Wire.read();
              (*(ledPointer + myStrip.ledsConfigured)).current_position = (*(ledPointer + myStrip.ledsConfigured)).inital_position;
              (*(ledPointer + myStrip.ledsConfigured)).isSelected = 0;
-
-             //Serial.println((*(ledPointer + myStrip.ledsConfigured)).inital_position );
-             //Serial.println((*(ledPointer + myStrip.ledsConfigured)).rotation);
-             //Serial.println((*(ledPointer + myStrip.ledsConfigured)).myColor.r);
-             //Serial.println((*(ledPointer + myStrip.ledsConfigured)).myColor.g);
 
               myStrip.ledsConfigured += 1;
               if(myStrip.ledsConfigured >= myStrip.leds_on){
@@ -113,14 +109,26 @@ void I2CValueRead(int howMany){
     case(6):
         //Change the color of one of the leds when its selected.
         pos = Wire.read();
-        (*(ledPointer + pos)).myColor = (RGB){0,0,255};
+        ledColorBackup = new RGB[myStrip.leds_on];
+        //Backups the color
+        for(int i = 0; i < myStrip.leds_on; i++){
+            ledColorBackup[i] = (*(ledPointer + i)).myColor;
+            (*(ledPointer + i)).myColor = (*(ledPointer + pos)).myColor; //Color Change for the selected led for five seconds
+        }
         (*(ledPointer + pos)).isSelected = 1;
         break;
     case(7):
         //Change the Led color back to normal after it's been selected for a while.
         pos = Wire.read();
-        (*(ledPointer + pos)).myColor = myStrip.generalColor;
+        //Restore Backup
+        for(int i = 0; i < myStrip.leds_on; i++){
+            (*(ledPointer + i)).myColor = ledColorBackup[i] ;
+        }
+        //Putting Led Back to normal
         (*(ledPointer + pos)).isSelected = 0;
+        //Frees the memory
+        delete[] ledPointer;
+         ledPointer = nullptr;
         break;
     case (8):
         //When socket is disconnected
@@ -159,6 +167,7 @@ void colorChanger(int power){
       }
   }
 }
+
 
 /* Starts the motion */
 void ledMotion(){

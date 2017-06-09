@@ -48,7 +48,6 @@ void startUpPlug() {
         while (Wire.available()) {
             myStrip.relayState = Wire.read();
             myStrip.personNear = Wire.read();
-
             myStrip.leds_on = Wire.read();
             Serial.print("Number of Leds: ");
             Serial.print(myStrip.leds_on);
@@ -127,15 +126,17 @@ void I2CValueRead(int howMany){
         //Putting Led Back to normal
         (*(ledPointer + pos)).isSelected = 0;
         //Frees the memory
-        delete[] ledPointer;
-         ledPointer = nullptr;
+        delete[] ledColorBackup;
+         ledColorBackup = nullptr;
         break;
     case (8):
         //When socket is disconnected
+        myStrip.canStartMovement = 0;
           stripOff();
           for(byte i = 0; i < myStrip.leds_on; i++){
               (*(ledPointer + i)).myColor = (RGB){0,0,0};
           }
+         delete[] ledPointer; //Free's Memory to start again
           break;
     default:
       ignoreSerie();
@@ -178,7 +179,7 @@ void ledMotion(){
                   (*(ledPointer + i)).current_position = 0;
                   //HeartBeat - when first led passes in position 0
               }
-              if((*(ledPointer + 0)).current_position == 0 ){
+              if((*(ledPointer + 0)).current_position == (*(ledPointer + 0)).inital_position){
                   digitalWrite(HEART_BEAT_PIN, HIGH);
               }
               //Write The colors
@@ -191,7 +192,7 @@ void ledMotion(){
                   (*(ledPointer + i)).current_position = 12;
                   //HeartBeat
               }
-              if((*(ledPointer + 0)).current_position == 0 ){
+              if((*(ledPointer + 0)).current_position == (*(ledPointer + 0)).inital_position ){
                   digitalWrite(HEART_BEAT_PIN, HIGH);
               }
               //Write The colors

@@ -194,10 +194,6 @@ void ledMotion(){
       }
       strip.show();
       delay(myStrip.delay.value);
-      //HeartBeat
-      if((*(ledPointer + 0)).current_position == (*(ledPointer + 0)).inital_position){
-        digitalWrite(HEART_BEAT_PIN, HIGH);
-      }
 
     //Updates Positions
     for(int i = 0; i < myStrip.leds_on; i++){
@@ -209,6 +205,10 @@ void ledMotion(){
             //Updates Current Position
             (*(ledPointer + i)).current_position = (*(ledPointer + i)).current_position - 1;
         }
+    }
+    //HeartBeat
+    if((*(ledPointer + 0)).current_position == (*(ledPointer + 0)).inital_position){
+        digitalWrite(HEART_BEAT_PIN, HIGH);
     }
 
 }

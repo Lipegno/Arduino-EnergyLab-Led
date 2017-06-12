@@ -38,7 +38,7 @@ void loop() {
     if(myStrip.canStartMovement != 0) {
         ledMotion();
     }
-    delay(100); // DO NOT REMOVE THIS
+    //delay(100); // DO NOT REMOVE THIS
 }
 
 

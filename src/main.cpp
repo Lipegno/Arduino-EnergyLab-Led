@@ -18,6 +18,8 @@ void blinkFourTime();
 void blinkFourTime();
 void readDelay();
 
+boolean searchForLedPos(int adjacentPosition);
+
 void setup() {
   Serial.begin(9600);      // initialize serial communication
   Serial.println("Setting Up Arduino");
@@ -181,14 +183,18 @@ void ledMotion(){
                   (*(ledPointer + i)).current_position = 0;
               }
               //Write The colors
-              strip.setPixelColor((LED_NUM + (*(ledPointer + i)).current_position - 1)%LED_NUM,strip.Color(0,0,0));
+              if(searchForLedPos((*(ledPointer + i)).current_position - 1) != true){
+                  strip.setPixelColor((LED_NUM + (*(ledPointer + i)).current_position - 1)%LED_NUM,strip.Color(0,0,0));
+              }
               strip.setPixelColor((LED_NUM + (*(ledPointer + i)).current_position)%LED_NUM,strip.Color((*(ledPointer + i)).myColor.r,(*(ledPointer + i)).myColor.g,(*(ledPointer + i)).myColor.b));
           }else if((*(ledPointer + i)).rotation == 2){
               if((*(ledPointer + i)).current_position <= 0){
                   (*(ledPointer + i)).current_position = 12;
               }
               //Write The colors
-              strip.setPixelColor(((*(ledPointer + i)).current_position + 1)%LED_NUM,strip.Color(0,0,0));
+              if(searchForLedPos((*(ledPointer + i)).current_position + 1) != true){
+                  strip.setPixelColor(((*(ledPointer + i)).current_position + 1)%LED_NUM,strip.Color(0,0,0));
+              }
               strip.setPixelColor(((*(ledPointer + i)).current_position)%LED_NUM,strip.Color((*(ledPointer + i)).myColor.r,(*(ledPointer + i)).myColor.g,(*(ledPointer + i)).myColor.b));
           }
       }
@@ -261,4 +267,15 @@ void readDelay(){
     }
     Serial.print("The delay is ");
     Serial.print(myStrip.delay.value);
+}
+
+boolean searchForLedPos(int adjacentPosition){
+    for(int i = 0; i < myStrip.ledsConfigured; i++){
+        if((*(ledPointer + 0)).current_position == adjacentPosition){
+            return true;
+        }
+    }
+    return false;
+
+
 }

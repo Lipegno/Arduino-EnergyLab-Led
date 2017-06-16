@@ -271,7 +271,7 @@ void readDelay(){
 
 boolean searchForLedPos(int adjacentPosition){
     for(int i = 0; i < myStrip.ledsConfigured; i++){
-        if((*(ledPointer + 0)).current_position == adjacentPosition){
+        if((*(ledPointer + i)).current_position == adjacentPosition){
             return true;
         }
     }

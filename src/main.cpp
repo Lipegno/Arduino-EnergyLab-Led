@@ -179,18 +179,18 @@ void ledMotion(){
     digitalWrite(HEART_BEAT_PIN, LOW);
     for(byte i = 0; i < myStrip.leds_on; i++){
           if( (*(ledPointer + i)).rotation == 1){
-              if((*(ledPointer + i)).current_position > LED_NUM - 1){
+              /*if((*(ledPointer + i)).current_position > LED_NUM - 1){
                   (*(ledPointer + i)).current_position = 0;
-              }
+              }*/
               //Write The colors
               if(searchForLedPos((*(ledPointer + i)).current_position - 1) != true){
                   strip.setPixelColor((LED_NUM + (*(ledPointer + i)).current_position - 1)%LED_NUM,strip.Color(0,0,0));
               }
               strip.setPixelColor((LED_NUM + (*(ledPointer + i)).current_position)%LED_NUM,strip.Color((*(ledPointer + i)).myColor.r,(*(ledPointer + i)).myColor.g,(*(ledPointer + i)).myColor.b));
           }else if((*(ledPointer + i)).rotation == 2){
-              if((*(ledPointer + i)).current_position <= 0){
+              /*if((*(ledPointer + i)).current_position <= 0){
                   (*(ledPointer + i)).current_position = 12;
-              }
+              }*/
               //Write The colors
               if(searchForLedPos((*(ledPointer + i)).current_position + 1) != true){
                   strip.setPixelColor(((*(ledPointer + i)).current_position + 1)%LED_NUM,strip.Color(0,0,0));
@@ -201,15 +201,22 @@ void ledMotion(){
       strip.show();
       delay(myStrip.delay.value);
 
+
     //Updates Positions
     for(int i = 0; i < myStrip.leds_on; i++){
         if( (*(ledPointer + i)).rotation == 1){
             //Updates Current Position
             (*(ledPointer + i)).current_position = (*(ledPointer + i)).current_position + 1;
+            if((*(ledPointer + i)).current_position > LED_NUM - 1){
+                (*(ledPointer + i)).current_position = 0;
+            }
         }
         else if((*(ledPointer + i)).rotation == 2){
             //Updates Current Position
             (*(ledPointer + i)).current_position = (*(ledPointer + i)).current_position - 1;
+            if((*(ledPointer + i)).current_position <= 0){
+                (*(ledPointer + i)).current_position = 12;
+            }
         }
     }
     //HeartBeat

@@ -214,13 +214,18 @@ void ledMotion(){
         else if((*(ledPointer + i)).rotation == 2){
             //Updates Current Position
             (*(ledPointer + i)).current_position = (*(ledPointer + i)).current_position - 1;
-            if((*(ledPointer + i)).current_position <= 0){
-                (*(ledPointer + i)).current_position = 12;
+            if((*(ledPointer + i)).current_position < 0){
+                (*(ledPointer + i)).current_position = 11;
             }
         }
     }
     //HeartBeat
+    Serial.print((*(ledPointer + 0)).current_position );
+    Serial.print(" == ");
+    Serial.println((*(ledPointer + 0)).inital_position);
+
     if((*(ledPointer + 0)).current_position == (*(ledPointer + 0)).inital_position){
+        Serial.print("Sent Heart Beat");
         digitalWrite(HEART_BEAT_PIN, HIGH);
     }
 

@@ -5,8 +5,8 @@
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(LED_NUM , LED_PIN, NEO_GRB + NEO_KHZ800);
 
 struct STRIP_PARAM myStrip;
-struct SINGLE_LED_PARAM *ledPointer = nullptr;
-struct RGB *ledColorBackup = nullptr;
+SINGLE_LED_PARAM *ledPointer = NULL;
+RGB *ledColorBackup = NULL;
 
 void ignoreSerie();
 void startUpPlug();
@@ -72,20 +72,23 @@ void I2CValueRead(int howMany){
  Serial.println(startByte);
  switch (startByte) {
    case (0):
+       Serial.println("Entrei no zero :D");
      startUpPlug();
-     break;
+         Serial.println("Saí do zero :D");
+         break;
    case (1):
-      POWER power;
-     for(int i = 0; i <= 3; i++){
-      power.bytes[i] = Wire.read();
-     }
-     colorChanger(power.value);
-     break;
+         POWER power;
+         for(int i = 0; i <= 3; i++){
+          power.bytes[i] = Wire.read();
+         }
+         colorChanger(power.value);
+         break;
    case (2):
          myStrip.relayState = Wire.read(); // receive byte
-      break;
+         break;
    case (3):
-       readDelay();
+         readDelay();
+         break;
       break;
    case(4):
           //Configure each new led
@@ -105,10 +108,10 @@ void I2CValueRead(int howMany){
                   myStrip.canStartMovement = 1;
               }
           }
-          break;
+         break;
     case(5):
-        myStrip.personNear = Wire.read();
-        break;
+         myStrip.personNear = Wire.read();
+         break;
     case(6):
         //Change the color of one of the leds when its selected.
         pos = Wire.read();
@@ -119,7 +122,7 @@ void I2CValueRead(int howMany){
             (*(ledPointer + i)).myColor = (*(ledPointer + pos)).myColor; //Color Change for the selected led for five seconds
         }
         (*(ledPointer + pos)).isSelected = 1;
-        break;
+         break;
     case(7):
         //Change the Led color back to normal after it's been selected for a while.
         pos = Wire.read();
@@ -131,17 +134,19 @@ void I2CValueRead(int howMany){
         (*(ledPointer + pos)).isSelected = 0;
         //Frees the memory
         delete[] ledColorBackup;
-         ledColorBackup = nullptr;
+         ledColorBackup = NULL;
         break;
     case (8):
-        //When socket is disconnected
-        myStrip.canStartMovement = 0;
+          //When socket is disconnected
+          myStrip.canStartMovement = 0;
           stripOff();
           for(byte i = 0; i < myStrip.leds_on; i++){
               (*(ledPointer + i)).myColor = (RGB){0,0,0};
           }
+
          delete[] ledPointer; //Free's Memory to start again
-          break;
+         ledPointer = NULL;
+         break;
     default:
       ignoreSerie();
       break;
@@ -220,12 +225,12 @@ void ledMotion(){
         }
     }
     //HeartBeat
-    Serial.print((*(ledPointer + 0)).current_position );
+    /*Serial.print((*(ledPointer + 0)).current_position );
     Serial.print(" == ");
     Serial.println((*(ledPointer + 0)).inital_position);
-
+    */
     if((*(ledPointer + 0)).current_position == (*(ledPointer + 0)).inital_position){
-        Serial.print("Sent Heart Beat");
+        //Serial.print("Sent Heart Beat");
         digitalWrite(HEART_BEAT_PIN, HIGH);
     }
 
